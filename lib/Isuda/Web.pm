@@ -57,7 +57,7 @@ sub dbh_star {
                 },
             },
         },
-    });
+    );
 }
 
 filter 'set_name' => sub {
