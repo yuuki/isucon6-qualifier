@@ -16,13 +16,13 @@ my $entries = $web->dbh->select_all(qq[
 foreach my $entry (@$entries) {
     my $is_description_valid = $web->is_spam_contents($entry->{description});
     $web->dbh->query(qq[
-        INSERT INTO spam (content_hash, valid)
+        INSERT IGNORE INTO spam (content_hash, valid)
         VALUES  (?, ?)
     ], sha1_hex(encode_utf8 $entry->{description}), 0+$is_description_valid);
 
     my $is_keyword_valid = $web->is_spam_contents($entry->{keyword});
     $web->dbh->query(qq[
-        INSERT INTO spam (content_hash, valid)
+        INSERT IGNORE INTO spam (content_hash, valid)
         VALUES  (?, ?)
     ], sha1_hex(encode_utf8 $entry->{keyword}), 0+$is_keyword_valid);
 }
