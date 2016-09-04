@@ -311,7 +311,7 @@ sub is_spam_contents {
     ], sha1_hex(encode_utf8($content)));
     if ($no_spam) {
         return 0;
-    } elsif {
+    } else {
         return 1;
     }
 
