@@ -236,7 +236,14 @@ get '/keyword/:keyword' => [qw/set_name/] => sub {
         WHERE keyword = ?
     ], $keyword);
     $c->halt(404) unless $entry;
-    $entry->{html} = $self->htmlify($c, $entry->{description});
+
+    my $html = $self->memd->get($entry->{id});
+    if ($html) {
+        $entry->{html} = decode_utf8 $html;
+    } else {
+        $entry->{html} = $self->htmlify($c, $entry->{description});
+        $self->memd->set($entry->{id}, encode_utf8($entry->{html}));
+    }
     $entry->{stars} = $self->load_stars_from_db($entry->{keyword});
 
     $c->render('keyword.tx', { entry => $entry });
