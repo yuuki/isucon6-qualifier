@@ -19,8 +19,6 @@ use Sereal qw(encode_sereal decode_sereal);
 my $decoder = Sereal::Decoder->new();
 my $encoder = Sereal::Encoder->new();
 
-open(my $spamfh, '>', '/tmp/spam.txt') or die "Can't open file";
-
 sub config {
     state $conf = {
         dsn           => $ENV{ISUDA_DSN}         // 'dbi:mysql:db=isuda',
@@ -320,8 +318,8 @@ sub is_spam_contents {
         ]);
         my $data = decode_json $res->content;
         if (!$data->{valid}) {
-            print $spamfh sha1_hex(encode_utf8($content))."\n"
-                or die "spam $content";
+            my $text = sha1_hex(encode_utf8($content))."\n";
+            warn $text;
         }
         return !$data->{valid};
     }
