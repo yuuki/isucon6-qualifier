@@ -320,7 +320,7 @@ sub is_spam_contents {
         ]);
         my $data = decode_json $res->content;
         if (!$data->{valid}) {
-            print $spamfh sha1_hex(encode_utf8($content)))."\n"
+            print $spamfh sha1_hex(encode_utf8($content))."\n"
                 or die "spam $content";
         }
         return !$data->{valid};
