@@ -162,9 +162,6 @@ get '/' => [qw/set_name/] => sub {
         if ($html) {
             $entry->{html} = decode_utf8 $html;
         } else {
-            if (!$entry->{html}) {
-                $entry->{html} = $self->htmlify($c, $entry->{description});
-            }
             $self->memd->set($entry->{id}, encode_utf8($entry->{html}));
         }
         $entry->{stars} = $self->load_stars_from_db($entry->{keyword});
@@ -196,12 +193,13 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     if (is_spam_contents($description) || is_spam_contents($keyword)) {
         $c->halt(400, 'SPAM!');
     }
+    my $html = $self->htmlify($c, $entry->{description});
     $self->dbh->query(q[
-        INSERT INTO entry (author_id, keyword, description, created_at, updated_at)
-        VALUES (?, ?, ?, NOW(), NOW())
+        INSERT INTO entry (author_id, keyword, description, created_at, updated_at, html)
+        VALUES (?, ?, ?, NOW(), NOW(), ?)
         ON DUPLICATE KEY UPDATE
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
-    ], ($user_id, $keyword, $description) x 2);
+    ], ($user_id, $keyword, $description, $html) x 2);
 
     $c->redirect('/');
 };
@@ -287,9 +285,6 @@ get '/keyword/:keyword' => [qw/set_name/] => sub {
     if ($html) {
         $entry->{html} = decode_utf8 $html;
     } else {
-        if (!$entry->{html}) {
-            $entry->{html} = $self->htmlify($c, $entry->{description});
-        }
         $self->memd->set($entry->{id}, encode_utf8($entry->{html}));
     }
     $entry->{stars} = $self->load_stars_from_db($entry->{keyword});
