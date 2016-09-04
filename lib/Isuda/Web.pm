@@ -159,7 +159,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     my $user_id = $c->stash->{user_id};
     my $description = $c->req->parameters->{description};
 
-    if ($self->is_spam_contents_orig($description) || $self->is_spam_contents_orig($keyword)) {
+    if ($self->is_spam_contents($description) || $self->is_spam_contents($keyword)) {
         $c->halt(400, 'SPAM!');
     }
     my $html = $self->htmlify($c, $description);
