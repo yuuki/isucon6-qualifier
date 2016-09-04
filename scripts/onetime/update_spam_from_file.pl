@@ -3,6 +3,8 @@ use utf8;
 use strict;
 use warnings;
 
+use Isuda::Web;
+
 my $logfile = $ARGV[0] or die "log file reuqire";
 
 open(my $logfh, '<', $logfile);
