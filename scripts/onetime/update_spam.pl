@@ -10,17 +10,17 @@ use Encode qw/encode_utf8 decode_utf8/;
 
 my $web = Isuda::Web->new;
 my $entries = $web->dbh->select_all(qq[
-    SELECT keyword,description FROM entry
+    SELECT keyword,description FROM entry id > 7352
 ]);
 
 foreach my $entry (@$entries) {
-    my $is_description_valid = $web->is_spam_contents($entry->{description});
+    my $is_description_valid = $web->is_spam_contents_orig($entry->{description});
     $web->dbh->query(qq[
         INSERT IGNORE INTO spam (content_hash, valid)
         VALUES  (?, ?)
     ], sha1_hex(encode_utf8 $entry->{description}), 0+$is_description_valid);
 
-    my $is_keyword_valid = $web->is_spam_contents($entry->{keyword});
+    my $is_keyword_valid = $web->is_spam_contents_orig($entry->{keyword});
     $web->dbh->query(qq[
         INSERT IGNORE INTO spam (content_hash, valid)
         VALUES  (?, ?)

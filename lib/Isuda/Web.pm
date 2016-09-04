@@ -315,6 +315,16 @@ sub is_spam_contents {
     return 1;
 }
 
+sub is_spam_contents_orig {
+    my ($self, $content) = @_;
+    my $ua = Furl->new;
+    my $res = $ua->post(config('isupam_origin'), [], [
+        content => encode_utf8($content),
+    ]);
+    my $data = decode_json $res->content;
+    return !$data->{valid};
+}
+
 # Isutar
 
 get '/stars' => sub {
