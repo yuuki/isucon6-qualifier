@@ -13,3 +13,6 @@ requires 'Plack::App::Proxy';
 requires 'Plack::Session';
 requires 'Starlet';
 requires 'Furl';
+
+requires 'Server::Starter';
+requires "Gazelle";
