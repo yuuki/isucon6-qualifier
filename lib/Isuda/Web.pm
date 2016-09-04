@@ -162,7 +162,9 @@ get '/' => [qw/set_name/] => sub {
         if ($html) {
             $entry->{html} = decode_utf8 $html;
         } else {
-            #$entry->{html} = $self->htmlify($c, $entry->{description});
+            if (!$entry->{html}) {
+                $entry->{html} = $self->htmlify($c, $entry->{description});
+            }
             $self->memd->set($entry->{id}, encode_utf8($entry->{html}));
         }
     }
@@ -308,20 +310,6 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
     ], $keyword);
     $c->redirect('/');
 };
-
-sub insert_htmlify_into_db {
-    my ($self, $c) = @_;
-
-    my $entries = $self->dbh->select_all(qq[
-        SELECT * FROM entry
-    ]);
-    foreach my $entry (@$entries) {
-        my $html = $self->htmlify($c, $entry->{description});
-        $self->dbh->query(qq[
-            UPDATE entry SET html=? WHERE id = ?
-        ], $html, $entry->{id});
-    }
-}
 
 sub htmlify {
     my ($self, $c, $content) = @_;
