@@ -108,7 +108,7 @@ filter 'set_name' => sub {
         if ($user_id) {
             $c->stash->{user_id} = $user_id;
             if (my $cache = $self->memd->get('user:'.$user_id)) {
-                $user = $decoder->decode($cache);
+                my $user = $decoder->decode($cache);
                 $c->stash->{user_name} = $user->{name};
             }
             $c->stash->{user_name} = $self->dbh->select_one(q[
