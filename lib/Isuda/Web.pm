@@ -192,7 +192,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     my $user_id = $c->stash->{user_id};
     my $description = $c->req->parameters->{description};
 
-    if (is_spam_contents($description) || is_spam_contents($keyword)) {
+    if ($self->is_spam_contents($description) || $self->is_spam_contents($keyword)) {
         $c->halt(400, 'SPAM!');
     }
     $self->dbh->query(q[
@@ -343,12 +343,23 @@ sub load_stars_from_db {
 }
 
 sub is_spam_contents {
-    my $content = shift;
+    my ($self, $content) = @_;
+
+    my $encoded_content = encode_utf8($content);
+    my $cache_key = sha1_hex($encoded_content);
+    if (my $cache_data = $self->memd->get($cache_key)) {
+        my $data = decode_utf8($cache_data);
+        return !$data->{valid};
+    }
+
     my $ua = Furl->new;
     my $res = $ua->post(config('isupam_origin'), [], [
-        content => encode_utf8($content),
+        content => $encoded_content,
     ]);
     my $data = decode_json $res->content;
+
+    $self->memd->set($cache_key, encode_utf8($data));
+
     !$data->{valid};
 }
 
