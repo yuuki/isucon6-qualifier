@@ -305,6 +305,12 @@ sub load_stars_from_db {
 
 sub is_spam_contents {
     my ($self, $content) = @_;
+
+    my $no_spam = $self->dbh->select_row(q[
+        SELECT id FROM spam WHERE content_hash = ?
+    ], sha1_hex(encode_utf8($content)));
+    return 0 if $no_spam;
+
     my $ua = Furl->new;
     my $res = $ua->post(config('isupam_origin'), [], [
         content => encode_utf8($content),
