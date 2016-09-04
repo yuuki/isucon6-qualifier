@@ -198,7 +198,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
         INSERT INTO entry (author_id, keyword, description, created_at, updated_at, html)
         VALUES (?, ?, ?, NOW(), NOW(), ?)
         ON DUPLICATE KEY UPDATE
-        author_id = ?, keyword = ?, description = ?, updated_at = NOW()
+        author_id = ?, keyword = ?, description = ?, updated_at = NOW(), html = ?
     ], ($user_id, $keyword, $description, $html) x 2);
 
     $c->redirect('/');
