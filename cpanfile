@@ -16,3 +16,6 @@ requires 'Furl';
 
 requires 'Server::Starter';
 requires "Gazelle";
+requires "Plack::Middleware::Session::Simple";
+requires "Cache::Memcached::Fast";
+requires "Sereal";
