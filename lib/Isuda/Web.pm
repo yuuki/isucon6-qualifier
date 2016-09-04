@@ -303,8 +303,6 @@ sub load_stars_from_db {
     return $stars;
 }
 
-my $content_file = 
-
 sub is_spam_contents {
     my ($self, $content) = @_;
 
