@@ -129,7 +129,6 @@ get '/' => [qw/set_name/] => sub {
             $self->memd->set($entry->{id}, $entry->{html});
         }
     }
-    $entry->{stars} = $self->load_stars_from_db_by_entries($entries);
 
     my $total_entries = $self->dbh->select_one(q[
         SELECT COUNT(*) FROM entry
@@ -299,17 +298,6 @@ sub load_stars_from_db {
     my $stars = $self->dbh_star->select_all(q[
         SELECT * FROM star WHERE keyword = ?
     ], $keyword);
-
-    return $stars;
-}
-
-sub load_stars_from_db_by_entries {
-    my ($self, $entries) = @_;
-
-    my $keywords = [ map { $_->{keyword} } @$entries ];
-    my $stars = $self->dbh_star->select_all(q[
-        SELECT * FROM star WHERE keyword IN (?)
-    ], $keywords);
 
     return $stars;
 }
