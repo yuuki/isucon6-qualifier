@@ -8,7 +8,7 @@ use Isuda::Web;
 
 my $web = Isuda::Web->new;
 my $entries = $web->dbh->select_all(qq[
-    SELECT keyword,description FROM entry
+    SELECT keyword,description FROM entry WHERE id > 7352
 ]);
 
 foreach my $entry (@$entries) {
