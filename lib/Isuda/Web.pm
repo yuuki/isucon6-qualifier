@@ -107,7 +107,8 @@ filter 'set_name' => sub {
         my $user_id = $c->env->{'psgix.session'}->{user_id};
         if ($user_id) {
             $c->stash->{user_id} = $user_id;
-            if (my $user = $self->memd->get('user:'.$user_id)) {
+            if (my $cache = $self->memd->get('user:'.$user_id)) {
+                $user = $decoder->decode($cache);
                 $c->stash->{user_name} = $user->{name};
             }
             $c->stash->{user_name} = $self->dbh->select_one(q[
@@ -243,9 +244,12 @@ get '/login' => [qw/set_name/] => sub {
 post '/login' => sub {
     my ($self, $c) = @_;
 
+    my $row;
     my $name = $c->req->parameters->{name};
-    my $row = $self->memd->get('user:'.$name);
-    if (!$row) {
+    my $cache = $self->memd->get('user:'.$name);
+    if ($cache) {
+        $row = decoder->decode($cache);
+    } else {
         $row = $self->dbh->select_row(q[
             SELECT * FROM user
             WHERE name = ?
