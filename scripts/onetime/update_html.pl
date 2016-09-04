@@ -10,7 +10,7 @@ my $entries = $web->dbh->select_all(qq[
     SELECT * FROM entry
 ]);
 foreach my $entry (@$entries) {
-    my $html = $web->htmlify($c, $entry->{description});
+    my $html = $web->htmlify($web, $entry->{description});
     $web->dbh->query(qq[
         UPDATE entry SET html=? WHERE id = ?
     ], $html, $entry->{id});
