@@ -41,8 +41,8 @@ my $encoder = Sereal::Encoder->new();
 
     for my $user (@$users) {
         my $encoded_user = $encoder->encode($user);
-        $memd->set('user.'.$user->{id}, $encoded_user);
-        $memd->set('user.'.$user->{name}, $encoded_user);
+        $memd->set('user:'.$user->{id}, $encoded_user);
+        $memd->set('user:'.$user->{name}, $encoded_user);
     }
 }
 
@@ -107,7 +107,7 @@ filter 'set_name' => sub {
         my $user_id = $c->env->{'psgix.session'}->{user_id};
         if ($user_id) {
             $c->stash->{user_id} = $user_id;
-            if (my $user = $self->memd->get('user'.$user_id)) {
+            if (my $user = $self->memd->get('user:'.$user_id)) {
                 $c->stash->{user_name} = $user->{name};
             }
             $c->stash->{user_name} = $self->dbh->select_one(q[
@@ -244,7 +244,7 @@ post '/login' => sub {
     my ($self, $c) = @_;
 
     my $name = $c->req->parameters->{name};
-    my $row = $self->memd->get('user'.$name);
+    my $row = $self->memd->get('user:'.$name);
     if (!$row) {
         $row = $self->dbh->select_row(q[
             SELECT * FROM user
