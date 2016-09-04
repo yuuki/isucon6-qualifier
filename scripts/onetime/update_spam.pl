@@ -12,13 +12,13 @@ my $entries = $web->dbh->select_all(qq[
 ]);
 
 foreach my $entry (@$entries) {
-    my $is_description_valid = $web->is_spam_contents($c, $entry->{description});
+    my $is_description_valid = $web->is_spam_contents($entry->{description});
     $web->dbh->query(qq[
         INSERT INTO spam (content, valid)
         VALUES  (?, ?)
     ], $entry->{description}, $is_description_valid);
 
-    my $is_keyword_valid = $web->is_spam_contents($c, $entry->{keyword});
+    my $is_keyword_valid = $web->is_spam_contents($entry->{keyword});
     $web->dbh->query(qq[
         INSERT INTO spam (content, valid)
         VALUES  (?, ?)
