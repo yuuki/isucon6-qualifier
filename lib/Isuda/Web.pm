@@ -347,7 +347,7 @@ sub is_spam_contents {
     my $encoded_content = encode_utf8($content);
     my $cache_key = sha1_hex($encoded_content);
     if (my $cache_data = $self->memd->get($cache_key)) {
-        my $data = decode_utf8($cache_data);
+        my $data = decode_json $cache_data;
         return !$data->{valid};
     }
 
@@ -357,7 +357,7 @@ sub is_spam_contents {
     ]);
     my $data = decode_json $res->content;
 
-    $self->memd->set($cache_key, encode_utf8($data));
+    $self->memd->set($cache_key, $res->content); # json
 
     !$data->{valid};
 }
