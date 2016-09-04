@@ -110,11 +110,12 @@ filter 'set_name' => sub {
             if (my $cache = $self->memd->get('user:'.$user_id)) {
                 my $user = $decoder->decode($cache);
                 $c->stash->{user_name} = $user->{name};
+            } else {
+                $c->stash->{user_name} = $self->dbh->select_one(q[
+                    SELECT name FROM user
+                    WHERE id = ?
+                ], $user_id);
             }
-            $c->stash->{user_name} = $self->dbh->select_one(q[
-                SELECT name FROM user
-                WHERE id = ?
-            ], $user_id);
             $c->halt(403) unless defined $c->stash->{user_name};
         }
         $app->($self,$c);
