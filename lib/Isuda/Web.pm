@@ -19,7 +19,7 @@ use Sereal qw(encode_sereal decode_sereal);
 my $decoder = Sereal::Decoder->new();
 my $encoder = Sereal::Encoder->new();
 
-open(my $spamfh, '>', '/tmp/spam.txt');
+open(my $spamfh, '>', '/tmp/spam.txt') or die "Can't open file";
 
 sub config {
     state $conf = {
@@ -320,7 +320,8 @@ sub is_spam_contents {
         ]);
         my $data = decode_json $res->content;
         if (!$data->{valid}) {
-            print $spamfh sprintf("%s\n", sha1_hex(encode_utf8($content)))
+            print $spamfh sha1_hex(encode_utf8($content)))."\n"
+                or die "spam $content";
         }
         return !$data->{valid};
     }
