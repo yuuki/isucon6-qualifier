@@ -135,9 +135,10 @@ get '/initialize' => sub {
     $self->dbh->query(q[
         DELETE FROM entry WHERE id > 7352
     ]);
-    my $origin = config('isutar_origin');
-    my $url = URI->new("$origin/initialize");
-    Furl->new->get($url);
+    # my $origin = config('isutar_origin');
+    # my $url = URI->new("$origin/initialize");
+    # Furl->new->get($url);
+    $self->dbh_star->query('TRUNCATE star');
 
     $c->render_json({
         result => 'ok',
@@ -360,5 +361,45 @@ sub is_spam_contents {
     my $data = decode_json $res->content;
     !$data->{valid};
 }
+
+# Isutar
+
+get '/stars' => sub {
+    my ($self, $c) = @_;
+
+    my $stars = $self->dbh_star->select_all(q[
+        SELECT * FROM star WHERE keyword = ?
+    ], $c->req->parameters->{keyword});
+
+    $c->render_json({
+        stars => $stars,
+    });
+};
+
+post '/stars' => sub {
+    my ($self, $c) = @_;
+    my $keyword = $c->req->parameters->{keyword};
+
+    # my $origin = $ENV{ISUDA_ORIGIN} // 'http://localhost:5000';
+    # my $url = "$origin/keyword/" . uri_escape_utf8($keyword);
+    # my $res = Furl->new->get($url);
+    # unless ($res->is_success) {
+    #     $c->halt(404);
+    # }
+    my $entry = $self->dbh->select_row(qq[
+        SELECT * FROM entry
+        WHERE keyword = ?
+    ], $keyword);
+    $c->halt(404) unless $entry;
+
+    $self->dbh_star->query(q[
+        INSERT INTO star (keyword, user_name, created_at)
+        VALUES (?, ?, NOW())
+    ], $keyword, $c->req->parameters->{user});
+
+    $c->render_json({
+        result => 'ok',
+    });
+};
 
 1;
