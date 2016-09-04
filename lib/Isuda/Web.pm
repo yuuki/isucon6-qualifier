@@ -193,7 +193,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     if (is_spam_contents($description) || is_spam_contents($keyword)) {
         $c->halt(400, 'SPAM!');
     }
-    my $html = $self->htmlify($c, $entry->{description});
+    my $html = $self->htmlify($c, $description);
     $self->dbh->query(q[
         INSERT INTO entry (author_id, keyword, description, created_at, updated_at, html)
         VALUES (?, ?, ?, NOW(), NOW(), ?)
