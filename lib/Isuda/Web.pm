@@ -139,7 +139,6 @@ get '/initialize' => sub {
     # my $url = URI->new("$origin/initialize");
     # Furl->new->get($url);
     $self->dbh_star->query('TRUNCATE star');
-    $self->insert_htmlify_into_db($c);
 
     $c->render_json({
         result => 'ok',
@@ -317,7 +316,7 @@ sub insert_htmlify_into_db {
         SELECT * FROM entry
     ]);
     foreach my $entry (@$entries) {
-        $html = $self->htmlify($c, $entry->{description});
+        my $html = $self->htmlify($c, $entry->{description});
         $self->dbh->query(qq[
             UPDATE entry SET html=? WHERE id = ?
         ], $html, $entry->{id});
