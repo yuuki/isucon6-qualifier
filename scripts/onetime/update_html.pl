@@ -13,7 +13,7 @@ my $entries = $web->dbh->select_all(qq[
 ]);
 
 my $c = Kossy::Connection->new({
-    req => Kossy::Request->new(env => {}),
+    req => Kossy::Request->new({}),
 });
 
 foreach my $entry (@$entries) {
