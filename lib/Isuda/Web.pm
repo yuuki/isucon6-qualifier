@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 use Kossy;
 use DBIx::Sunny;
-use Encode qw/encode_utf8/;
+use Encode qw/encode_utf8 decode_utf8/;
 use POSIX qw/ceil/;
 use Furl;
 use JSON qw/decode_json/;
@@ -123,13 +123,10 @@ get '/' => [qw/set_name/] => sub {
     foreach my $entry (@$entries) {
         my $html = $self->memd->get($entry->{id});
         if ($html) {
-            $entry->{html} = $html;
+            $entry->{html} = decode_utf8 $html;
         } else {
             $entry->{html} = $self->htmlify($c, $entry->{description});
-            {
-                no utf8;
-                $self->memd->set($entry->{id}, $entry->{html});
-            }
+            $self->memd->set($entry->{id}, encode_utf8($entry->{html}));
         }
     }
 
