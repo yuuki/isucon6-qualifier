@@ -310,17 +310,9 @@ sub is_spam_contents {
         SELECT * FROM spam WHERE content_hash = ?
     ], sha1_hex(encode_utf8($content)));
     if ($spam) {
-        use Data::Dumper;
-        warn Dumper $spam;
-        return !$spam->{valid};
-    } else {
-        my $ua = Furl->new;
-        my $res = $ua->post(config('isupam_origin'), [], [
-            content => encode_utf8($content),
-        ]);
-        my $data = decode_json $res->content;
-        return !$data->{valid};
+        return 0;
     }
+    return 1;
 }
 
 # Isutar
