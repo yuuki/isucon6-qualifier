@@ -248,7 +248,7 @@ post '/login' => sub {
     my $name = $c->req->parameters->{name};
     my $cache = $self->memd->get('user:'.$name);
     if ($cache) {
-        $row = decoder->decode($cache);
+        $row = $decoder->decode($cache);
     } else {
         $row = $self->dbh->select_row(q[
             SELECT * FROM user
