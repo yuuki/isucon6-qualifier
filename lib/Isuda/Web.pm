@@ -13,6 +13,7 @@ use Digest::SHA1 qw/sha1_hex/;
 use URI::Escape qw/uri_escape_utf8/;
 use Text::Xslate::Util qw/html_escape/;
 use List::Util qw/min max/;
+use Cache::Memcached::Fast;
 
 sub config {
     state $conf = {
@@ -28,6 +29,14 @@ sub config {
         die "config value of $key undefined";
     }
     return $v;
+}
+
+sub memd {
+    my ($self) = @_;
+
+    return $self->{memd} //= Cache::Memcached::Fast->new({
+        servers => [ { address => 'localhost:11211', noreply => 1 }, ]
+    });
 }
 
 sub dbh {
@@ -112,7 +121,13 @@ get '/' => [qw/set_name/] => sub {
         OFFSET @{[ $PER_PAGE * ($page-1) ]}
     ]);
     foreach my $entry (@$entries) {
-        $entry->{html}  = $self->htmlify($c, $entry->{description});
+        my $html = $self->memd->get($entry->{id});
+        if ($html) {
+            $entry->{html} = $html;
+        } else {
+            $entry->{html} = $self->htmlify($c, $entry->{description});
+            $self->memd->set($entry->{id}, $entry->{html});
+        }
     }
     $entry->{stars} = $self->load_stars_from_db_by_entries($entries);
 

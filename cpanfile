@@ -19,3 +19,4 @@ requires "Gazelle";
 requires "Plack::Middleware::Session::Simple";
 requires "Cache::Memcached::Fast";
 requires "Sereal";
+requires 'List::UtilsBy';
