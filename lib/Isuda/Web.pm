@@ -287,7 +287,9 @@ get '/keyword/:keyword' => [qw/set_name/] => sub {
     if ($html) {
         $entry->{html} = decode_utf8 $html;
     } else {
-        $entry->{html} = $self->htmlify($c, $entry->{description});
+        if (!$entry->{html}) {
+            $entry->{html} = $self->htmlify($c, $entry->{description});
+        }
         $self->memd->set($entry->{id}, encode_utf8($entry->{html}));
     }
     $entry->{stars} = $self->load_stars_from_db($entry->{keyword});
