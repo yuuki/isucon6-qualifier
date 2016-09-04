@@ -18,12 +18,12 @@ foreach my $entry (@$entries) {
     $web->dbh->query(qq[
         INSERT INTO spam (content_hash, valid)
         VALUES  (?, ?)
-    ], sha1_hex(encode_utf8 $entry->{description}), $is_description_valid);
+    ], sha1_hex(encode_utf8 $entry->{description}), 0+$is_description_valid);
 
     my $is_keyword_valid = $web->is_spam_contents($entry->{keyword});
     $web->dbh->query(qq[
         INSERT INTO spam (content_hash, valid)
         VALUES  (?, ?)
-    ], sha1_hex(encode_utf8 $entry->{keyword}), $is_keyword_valid);
+    ], sha1_hex(encode_utf8 $entry->{keyword}), 0+$is_keyword_valid);
 }
 
