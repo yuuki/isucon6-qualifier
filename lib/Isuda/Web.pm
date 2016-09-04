@@ -139,6 +139,7 @@ get '/initialize' => sub {
     # my $url = URI->new("$origin/initialize");
     # Furl->new->get($url);
     $self->dbh_star->query('TRUNCATE star');
+    $self->insert_htmlify_into_db($c);
 
     $c->render_json({
         result => 'ok',
@@ -162,7 +163,7 @@ get '/' => [qw/set_name/] => sub {
         if ($html) {
             $entry->{html} = decode_utf8 $html;
         } else {
-            $entry->{html} = $self->htmlify($c, $entry->{description});
+            #$entry->{html} = $self->htmlify($c, $entry->{description});
             $self->memd->set($entry->{id}, encode_utf8($entry->{html}));
         }
     }
@@ -309,6 +310,20 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
     $c->redirect('/');
 };
 
+sub insert_htmlify_into_db {
+    my ($self, $c) = @_;
+
+    my $entries = $self->dbh->select_all(qq[
+        SELECT * FROM entry
+    ]);
+    foreach my $entry (@$entries) {
+        $html = $self->htmlify($c, $entry->{description});
+        $self->dbh->query(qq[
+            UPDATE entry SET html=? WHERE id = ?
+        ], $html, $entry->{id});
+    }
+}
+
 sub htmlify {
     my ($self, $c, $content) = @_;
     return '' unless defined $content;
@@ -328,18 +343,6 @@ sub htmlify {
         $content =~ s/$hash/$link/g;
     }
     $content =~ s{\n}{<br \/>\n}gr;
-}
-
-sub load_stars {
-    my ($self, $keyword) = @_;
-    my $origin = config('isutar_origin');
-    my $url = URI->new("$origin/stars");
-    $url->query_form(keyword => $keyword);
-    my $ua = Furl->new;
-    my $res = $ua->get($url);
-    my $data = decode_json $res->content;
-
-    $data->{stars};
 }
 
 sub load_stars_from_db {
