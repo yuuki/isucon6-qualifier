@@ -309,14 +309,18 @@ sub is_spam_contents {
     my $no_spam = $self->dbh->select_row(q[
         SELECT id FROM spam WHERE content_hash = ?
     ], sha1_hex(encode_utf8($content)));
-    return 0 if $no_spam;
+    if ($no_spam) {
+        return 0;
+    } elsif {
+        return 1;
+    }
 
-    my $ua = Furl->new;
-    my $res = $ua->post(config('isupam_origin'), [], [
-        content => encode_utf8($content),
-    ]);
-    my $data = decode_json $res->content;
-    !$data->{valid};
+    # my $ua = Furl->new;
+    # my $res = $ua->post(config('isupam_origin'), [], [
+    #     content => encode_utf8($content),
+    # ]);
+    # my $data = decode_json $res->content;
+    # !$data->{valid};
 }
 
 # Isutar
