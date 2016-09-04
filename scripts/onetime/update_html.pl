@@ -14,7 +14,7 @@ my $entries = $web->dbh->select_all(qq[
 my $c = Kossy::Connection->new;
 
 foreach my $entry (@$entries) {
-    my $html = $web->htmlify($web, $entry->{description});
+    my $html = $web->htmlify($c, $entry->{description});
     $web->dbh->query(qq[
         UPDATE entry SET html=? WHERE id = ?
     ], $html, $entry->{id});
