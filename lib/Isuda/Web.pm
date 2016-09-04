@@ -19,6 +19,8 @@ use Sereal qw(encode_sereal decode_sereal);
 my $decoder = Sereal::Decoder->new();
 my $encoder = Sereal::Encoder->new();
 
+open(my $spamfh, '>', '/tmp/spam.txt');
+
 sub config {
     state $conf = {
         dsn           => $ENV{ISUDA_DSN}         // 'dbi:mysql:db=isuda',
@@ -160,6 +162,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     my $description = $c->req->parameters->{description};
 
     if ($self->is_spam_contents($description) || $self->is_spam_contents($keyword)) {
+        print $spamfh spirntf("%s\n", sha1_hex(encode_utf8($description)))
         $c->halt(400, 'SPAM!');
     }
     my $html = $self->htmlify($c, $description);
