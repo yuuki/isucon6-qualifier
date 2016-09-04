@@ -307,7 +307,7 @@ sub is_spam_contents {
     my ($self, $content) = @_;
 
     my $spam = $self->dbh->select_row(q[
-        SELECT id FROM spam WHERE content_hash = ?
+        SELECT valid FROM spam WHERE content_hash = ?
     ], sha1_hex(encode_utf8($content)));
     if ($spam) {
         return !$spam->{valid};
