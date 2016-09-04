@@ -162,7 +162,6 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     my $description = $c->req->parameters->{description};
 
     if ($self->is_spam_contents($description) || $self->is_spam_contents($keyword)) {
-        print $spamfh spirntf("%s\n", sha1_hex(encode_utf8($description)))
         $c->halt(400, 'SPAM!');
     }
     my $html = $self->htmlify($c, $description);
@@ -320,6 +319,9 @@ sub is_spam_contents {
             content => encode_utf8($content),
         ]);
         my $data = decode_json $res->content;
+        if (!$data->{valid}) {
+            print $spamfh spirntf("%s\n", sha1_hex(encode_utf8($content)))
+        }
         return !$data->{valid};
     }
 }
