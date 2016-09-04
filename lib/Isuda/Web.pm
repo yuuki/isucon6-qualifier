@@ -33,7 +33,7 @@ my $encoder = Sereal::Encoder->new();
                 return;
             },
         },
-    );
+    });
 
     my $users = $dbh->select_all(q[
         SELECT * FROM user
@@ -244,7 +244,7 @@ post '/login' => sub {
     my ($self, $c) = @_;
 
     my $name = $c->req->parameters->{name};
-    my $row = $self->memd->get('user'.$name));
+    my $row = $self->memd->get('user'.$name);
     if (!$row) {
         $row = $self->dbh->select_row(q[
             SELECT * FROM user
