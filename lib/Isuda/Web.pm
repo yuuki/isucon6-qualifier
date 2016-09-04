@@ -167,6 +167,7 @@ get '/' => [qw/set_name/] => sub {
             }
             $self->memd->set($entry->{id}, encode_utf8($entry->{html}));
         }
+        $entry->{stars} = $self->load_stars_from_db($entry->{keyword});
     }
 
     my $total_entries = $self->dbh->select_one(q[
