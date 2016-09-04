@@ -39,7 +39,7 @@ sub memd {
     my ($self) = @_;
 
     return $self->{memd} //= Cache::Memcached::Fast->new({
-        servers => [ { address => 'localhost:11211', noreply => 1 }, ]
+        servers => [ { address => '/tmp/memcached.sock', noreply => 1 } ]
     });
 }
 
