@@ -12,7 +12,7 @@ open(my $logfh, '<', $logfile);
 my $web = Isuda::Web->new;
 
 while (my $line = readline $logfh) {
-    chomp($line)
+    chomp($line);
 
     $web->dbh->query(qq[
         INSERT IGNORE INTO spam (content_hash, valid)
