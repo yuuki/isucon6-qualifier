@@ -44,6 +44,22 @@ sub dbh {
     });
 }
 
+sub dbh_star {
+    my ($self) = @_;
+    return $self->{dbh_star} //= DBIx::Sunny->connect(
+        $ENV{ISUTAR_DSN} // 'dbi:mysql:db=isutar', $ENV{ISUTAR_DB_USER} // 'root', $ENV{ISUTAR_DB_PASSWORD} // 'root', {
+            Callbacks => {
+                connected => sub {
+                    my $dbh = shift;
+                    $dbh->do(q[SET SESSION sql_mode='TRADITIONAL,NO_AUTO_VALUE_ON_ZERO,ONLY_FULL_GROUP_BY']);
+                    $dbh->do('SET NAMES utf8mb4');
+                    return;
+                },
+            },
+        },
+    });
+}
+
 filter 'set_name' => sub {
     my $app = shift;
     sub {
@@ -97,7 +113,7 @@ get '/' => [qw/set_name/] => sub {
     ]);
     foreach my $entry (@$entries) {
         $entry->{html}  = $self->htmlify($c, $entry->{description});
-        $entry->{stars} = $self->load_stars($entry->{keyword});
+        $entry->{stars} = $self->load_stars_from_db($entry->{keyword});
     }
 
     my $total_entries = $self->dbh->select_one(q[
@@ -207,7 +223,7 @@ get '/keyword/:keyword' => [qw/set_name/] => sub {
     ], $keyword);
     $c->halt(404) unless $entry;
     $entry->{html} = $self->htmlify($c, $entry->{description});
-    $entry->{stars} = $self->load_stars($entry->{keyword});
+    $entry->{stars} = $self->load_stars_from_db($entry->{keyword});
 
     $c->render('keyword.tx', { entry => $entry });
 };
@@ -260,6 +276,16 @@ sub load_stars {
     my $data = decode_json $res->content;
 
     $data->{stars};
+}
+
+sub load_stars_from_db {
+    my ($self, $keyword) = @_;
+
+    my $stars = $self->dbh_star->select_all(q[
+        SELECT * FROM star WHERE keyword = ?
+    ], $keyword);
+
+    return $stars;
 }
 
 sub is_spam_contents {
