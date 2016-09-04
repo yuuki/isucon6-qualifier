@@ -305,22 +305,11 @@ sub load_stars_from_db {
 
 sub is_spam_contents {
     my ($self, $content) = @_;
-
-    my $encoded_content = encode_utf8($content);
-    my $cache_key = sha1_hex($encoded_content);
-    if (my $cache_data = $self->memd->get($cache_key)) {
-        my $data = decode_json $cache_data;
-        return !$data->{valid};
-    }
-
     my $ua = Furl->new;
     my $res = $ua->post(config('isupam_origin'), [], [
-        content => $encoded_content,
+        content => encode_utf8($content),
     ]);
     my $data = decode_json $res->content;
-
-    $self->memd->set($cache_key, $res->content); # json
-
     !$data->{valid};
 }
 
