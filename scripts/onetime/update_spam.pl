@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 
 use Isuda::Web;
+use Digest::SHA1 qw/sha1_hex/;
 
 my $web = Isuda::Web->new;
 my $entries = $web->dbh->select_all(qq[
@@ -14,14 +15,14 @@ my $entries = $web->dbh->select_all(qq[
 foreach my $entry (@$entries) {
     my $is_description_valid = $web->is_spam_contents($entry->{description});
     $web->dbh->query(qq[
-        INSERT INTO spam (content, valid)
+        INSERT INTO spam (content_hash, valid)
         VALUES  (?, ?)
-    ], $entry->{description}, $is_description_valid);
+    ], sha1_hex($entry->{description}), $is_description_valid);
 
     my $is_keyword_valid = $web->is_spam_contents($entry->{keyword});
     $web->dbh->query(qq[
-        INSERT INTO spam (content, valid)
+        INSERT INTO spam (content_hash, valid)
         VALUES  (?, ?)
-    ], $entry->{keyword}, $is_keyword_valid);
+    ], sha1_hex($entry->{keyword}), $is_keyword_valid);
 }
 
