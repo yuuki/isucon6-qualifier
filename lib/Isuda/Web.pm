@@ -126,7 +126,10 @@ get '/' => [qw/set_name/] => sub {
             $entry->{html} = $html;
         } else {
             $entry->{html} = $self->htmlify($c, $entry->{description});
-            $self->memd->set($entry->{id}, $entry->{html});
+            {
+                no utf8;
+                $self->memd->set($entry->{id}, $entry->{html});
+            }
         }
     }
 
