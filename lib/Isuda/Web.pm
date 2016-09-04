@@ -14,6 +14,37 @@ use URI::Escape qw/uri_escape_utf8/;
 use Text::Xslate::Util qw/html_escape/;
 use List::Util qw/min max/;
 use Cache::Memcached::Fast;
+use Sereal qw(encode_sereal decode_sereal);
+
+my $decoder = Sereal::Decoder->new();
+my $encoder = Sereal::Encoder->new();
+
+{
+
+    my $memd = Cache::Memcached::Fast->new({
+        servers => [ { address => 'localhost:11211', noreply => 1 }, ]
+    });
+    my $dbh = DBIx::Sunny->connect(config('dsn'), config('db_user'), config('db_password'), {
+        Callbacks => {
+            connected => sub {
+                my $dbh = shift;
+                $dbh->do(q[SET SESSION sql_mode='TRADITIONAL,NO_AUTO_VALUE_ON_ZERO,ONLY_FULL_GROUP_BY']);
+                $dbh->do('SET NAMES utf8mb4');
+                return;
+            },
+        },
+    );
+
+    my $users = $dbh->select_all(q[
+        SELECT * FROM user
+    ]);
+
+    for my $user (@$users) {
+        my $encoded_user = $encoder->encode($user);
+        $memd->set('user.'.$user->{id}, $encoded_user);
+        $memd->set('user.'.$user->{name}, $encoded_user);
+    }
+}
 
 sub config {
     state $conf = {
@@ -76,6 +107,9 @@ filter 'set_name' => sub {
         my $user_id = $c->env->{'psgix.session'}->{user_id};
         if ($user_id) {
             $c->stash->{user_id} = $user_id;
+            if (my $user = $self->memd->get('user'.$user_id)) {
+                $c->stash->{user_name} = $user->{name};
+            }
             $c->stash->{user_name} = $self->dbh->select_one(q[
                 SELECT name FROM user
                 WHERE id = ?
@@ -103,6 +137,7 @@ get '/initialize' => sub {
     my $origin = config('isutar_origin');
     my $url = URI->new("$origin/initialize");
     Furl->new->get($url);
+
     $c->render_json({
         result => 'ok',
     });
@@ -209,10 +244,13 @@ post '/login' => sub {
     my ($self, $c) = @_;
 
     my $name = $c->req->parameters->{name};
-    my $row = $self->dbh->select_row(q[
-        SELECT * FROM user
-        WHERE name = ?
-    ], $name);
+    my $row = $self->memd->get('user'.$name));
+    if (!$row) {
+        $row = $self->dbh->select_row(q[
+            SELECT * FROM user
+            WHERE name = ?
+        ], $name);
+    }
     if (!$row || $row->{password} ne sha1_hex($row->{salt}.$c->req->parameters->{password})) {
         $c->halt(403)
     }
