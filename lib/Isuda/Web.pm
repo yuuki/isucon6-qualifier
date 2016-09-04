@@ -303,6 +303,8 @@ sub load_stars_from_db {
     return $stars;
 }
 
+my $content_file = 
+
 sub is_spam_contents {
     my ($self, $content) = @_;
 
@@ -312,15 +314,13 @@ sub is_spam_contents {
     if ($no_spam) {
         return 0;
     } else {
-        return 1;
+        my $ua = Furl->new;
+        my $res = $ua->post(config('isupam_origin'), [], [
+            content => encode_utf8($content),
+        ]);
+        my $data = decode_json $res->content;
+        return !$data->{valid};
     }
-
-    # my $ua = Furl->new;
-    # my $res = $ua->post(config('isupam_origin'), [], [
-    #     content => encode_utf8($content),
-    # ]);
-    # my $data = decode_json $res->content;
-    # !$data->{valid};
 }
 
 # Isutar
