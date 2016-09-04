@@ -10,7 +10,7 @@ use Encode qw/encode_utf8 decode_utf8/;
 
 my $web = Isuda::Web->new;
 my $entries = $web->dbh->select_all(qq[
-    SELECT keyword,description FROM entry id > 7352
+    SELECT keyword,description FROM entry WHERE id > 7352
 ]);
 
 foreach my $entry (@$entries) {
