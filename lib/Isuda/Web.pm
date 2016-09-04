@@ -113,8 +113,8 @@ get '/' => [qw/set_name/] => sub {
     ]);
     foreach my $entry (@$entries) {
         $entry->{html}  = $self->htmlify($c, $entry->{description});
-        $entry->{stars} = $self->load_stars_from_db($entry->{keyword});
     }
+    $entry->{stars} = $self->load_stars_from_db_by_entries($entries);
 
     my $total_entries = $self->dbh->select_one(q[
         SELECT COUNT(*) FROM entry
@@ -284,6 +284,17 @@ sub load_stars_from_db {
     my $stars = $self->dbh_star->select_all(q[
         SELECT * FROM star WHERE keyword = ?
     ], $keyword);
+
+    return $stars;
+}
+
+sub load_stars_from_db_by_entries {
+    my ($self, $entries) = @_;
+
+    my $keywords = [ map { $_->{keyword} } @$entries ];
+    my $stars = $self->dbh_star->select_all(q[
+        SELECT * FROM star WHERE keyword IN (?)
+    ], $keywords);
 
     return $stars;
 }
